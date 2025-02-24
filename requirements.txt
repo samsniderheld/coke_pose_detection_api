@@ -1,0 +1,7 @@
+fastapi
+httpx
+mediapipe
+numpy
+pillow
+pytest
+uvicorn
