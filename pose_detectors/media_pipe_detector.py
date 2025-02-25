@@ -1,14 +1,21 @@
+import io
 import mediapipe as mp
 import numpy as np
 import os
 import requests
 from PIL import Image
+from PIL import Image as PILImage
 from .pose_detector import PoseDetector
+
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 from mediapipe.python._framework_bindings.image import Image
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
+
+connections = mp.solutions.pose.POSE_CONNECTIONS
 
 class MediaPipeDetector(PoseDetector):
     def __init__(self):
@@ -68,8 +75,57 @@ class MediaPipeDetector(PoseDetector):
             solutions.pose.POSE_CONNECTIONS,
             solutions.drawing_styles.get_default_pose_landmarks_style())
         return annotated_image
+    
+    def figure_to_numpy(fig):
+        # Save the figure to a buffer
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        
+        # Read the buffer into a PIL image
+        img = PILImage.open(buf)
+        
+        return img
+    
+    def plot_landmarks(self, poses):
+        fig = plt.figure()
+        ax = plt.axes(111,projection='3d')
+        ax.view_init(elev=10, azim=10)
+        plotted_landmarks = {}
+        for idx, landmark in enumerate(poses.pose_world_landmarks[0]):
 
-    def detect_poses(self, image_or_path) -> list[PoseLandmarkerResult, Image]:
+            ax.scatter3D(
+                xs=[-landmark.z],
+                ys=[landmark.x],
+                zs=[-landmark.y]
+            )
+            plotted_landmarks[idx] = (-landmark.z, landmark.x, -landmark.y)
+
+        num_landmarks = len(poses.pose_world_landmarks[0])
+        for connection in connections:
+            start_idx = connection[0]
+            end_idx = connection[1]
+            if not (0 <= start_idx < num_landmarks and 0 <= end_idx < num_landmarks):
+                raise ValueError(f'Landmark index is out of range. Invalid connection '
+                                f'from landmark #{start_idx} to landmark #{end_idx}.')
+            if start_idx in plotted_landmarks and end_idx in plotted_landmarks:
+                landmark_pair = [
+                    plotted_landmarks[start_idx], plotted_landmarks[end_idx]
+                ]
+                ax.plot3D(
+                    xs=[landmark_pair[0][0], landmark_pair[1][0]],
+                    ys=[landmark_pair[0][1], landmark_pair[1][1]],
+                    zs=[landmark_pair[0][2], landmark_pair[1][2]],
+                )
+        # Convert the figure to a NumPy array
+        img_array = self.figure_to_numpy(fig)
+        
+        plt.close(fig)  # Close the figure to free memory
+        
+        return img_array
+
+
+    def detect_poses(self, image_or_path) -> list[PoseLandmarkerResult, Image, PILImage]:
         if isinstance(image_or_path, Image):
             image = np.array(image_or_path)
             mp_image = self.load_image_np_array(image)
@@ -83,8 +139,9 @@ class MediaPipeDetector(PoseDetector):
             pose_landmarker_result = landmarker.detect(mp_image)
 
         rendered_image = self.draw_landmarks_on_image(mp_image, pose_landmarker_result)
+        plotted_image = self.plot_landmarks(pose_landmarker_result)
         
-        return [pose_landmarker_result, rendered_image]
+        return [pose_landmarker_result, rendered_image, plotted_image]
     
     
     
