@@ -85,7 +85,10 @@ class MediaPipeDetector(PoseDetector):
         # Read the buffer into a PIL image
         img = PILImage.open(buf)
         
-        return img
+        # Convert the PIL image to a NumPy array
+        img_array = np.array(img)
+        
+        return img_array
     
     def plot_landmarks(self, poses):
         fig = plt.figure()
@@ -125,7 +128,7 @@ class MediaPipeDetector(PoseDetector):
         return img_array
 
 
-    def detect_poses(self, image_or_path) -> list[PoseLandmarkerResult, Image, PILImage]:
+    def detect_poses(self, image_or_path) -> list[PoseLandmarkerResult, Image, np.ndarray]:
         if isinstance(image_or_path, Image):
             image = np.array(image_or_path)
             mp_image = self.load_image_np_array(image)
@@ -141,7 +144,7 @@ class MediaPipeDetector(PoseDetector):
         rendered_image = self.draw_landmarks_on_image(mp_image, pose_landmarker_result)
         plotted_image = self.plot_landmarks(pose_landmarker_result)
         
-        return [pose_landmarker_result, rendered_image, plotted_image]
+        return [pose_landmarker_result, rendered_image,plotted_image]
     
     
     
