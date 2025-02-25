@@ -48,7 +48,7 @@ class MediaPipeDetector(PoseDetector):
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=numpy_image)
         return mp_image
     
-    def draw_landmarks_on_image(rgb_image, detection_result):
+    def draw_landmarks_on_image(self, rgb_image, detection_result):
         pose_landmarks_list = detection_result.pose_landmarks
         annotated_image = np.copy(rgb_image)
 
