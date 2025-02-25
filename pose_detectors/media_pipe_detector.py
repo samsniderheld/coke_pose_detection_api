@@ -50,7 +50,8 @@ class MediaPipeDetector(PoseDetector):
     
     def draw_landmarks_on_image(self, rgb_image, detection_result):
         pose_landmarks_list = detection_result.pose_landmarks
-        annotated_image = np.copy(rgb_image)
+        np_image = rgb_image.numpy_view()
+        annotated_image = np.copy(np_image)
 
         # Loop through the detected poses to visualize.
         for idx in range(len(pose_landmarks_list)):
