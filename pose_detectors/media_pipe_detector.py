@@ -76,7 +76,7 @@ class MediaPipeDetector(PoseDetector):
             solutions.drawing_styles.get_default_pose_landmarks_style())
         return annotated_image
     
-    def figure_to_numpy(fig):
+    def figure_to_numpy(self, fig):
         # Save the figure to a buffer
         buf = io.BytesIO()
         fig.savefig(buf, format='png')
