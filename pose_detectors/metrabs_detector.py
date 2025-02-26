@@ -10,11 +10,17 @@ import os
 
 import matplotlib.pyplot as plt
 
+"""
+full list of skeletons:
+smpl_24, kinectv2_25, h36m_17, h36m_25, mpi_inf_3dhp_17, mpi_inf_3dhp_28, coco_19, smplx_42, ghum_35, 
+lsp_14, sailvos_26, gpa_34, aspset_17, bml_movi_87, mads_19, berkeley_mhad_43, total_capture_21, jta_22, 
+ikea_asm_17, human4d_32, 3dpeople_29, umpm_15, smpl+head_30
 
+"""
 
 class MetrabsDetector(PoseDetector):
     def __init__(self):
-        self.model_path = "metrabs_mob3l_y4t"
+        self.model_path = "metrabs_eff2l_y4"
         self.check_and_download_model()
         self.load_model()
         
@@ -26,7 +32,7 @@ class MetrabsDetector(PoseDetector):
             model_zippath = tf.keras.utils.get_file(
                 origin=f'{server_prefix}/{self.model_path}_20211019.zip',
                 extract=True, cache_subdir='models')
-            model_path = os.path.join(os.path.dirname(model_zippath), self.model_path)
+            self.model_path = os.path.join(os.path.dirname(model_zippath), self.model_path)+"_20211019.zip/metrabs_eff2l_y4"
             print(f"Model downloaded to {self.model_path}")
 
 
@@ -61,8 +67,6 @@ class MetrabsDetector(PoseDetector):
            
         return annotated_image
     
-    
-    
     def figure_to_numpy(self, fig):
         # Save the figure to a buffer
         buf = io.BytesIO()
@@ -80,6 +84,7 @@ class MetrabsDetector(PoseDetector):
     def plot_landmarks(self, detection_result):
         edges = self.model.per_skeleton_joint_edges['smpl_24'].numpy()
         poses3d = detection_result['poses3d'].numpy()
+        
         fig = plt.figure(figsize=(10, 5.2))
         ax = fig.add_subplot(1, 2, 2, projection='3d')
         ax.view_init(5, -85)
@@ -96,7 +101,6 @@ class MetrabsDetector(PoseDetector):
             ax.scatter(*pose3d.T, s=2)
 
         fig.tight_layout()
-        plt.show()
         # Convert the figure to a NumPy array
         img_array = self.figure_to_numpy(fig)
         
@@ -106,19 +110,19 @@ class MetrabsDetector(PoseDetector):
 
 
     def detect_poses(self, image_or_path) -> list[np.ndarray, np.ndarray, np.ndarray]:
-        if isinstance(image_or_path, Image):
+        if isinstance(image_or_path, Image.Image):
             raise ValueError("Input must be a file path")
         elif isinstance(image_or_path, str):
             image = self.load_image_path(image_or_path)
         else:
             raise ValueError("Input must be a file path")
 
-        detection_results = self.odel.detect_poses(image, skeleton='smpl_24')
+        detection_results = self.model.detect_poses(image, skeleton='smpl_24')
 
         rendered_image = self.draw_landmarks_on_image(image, detection_results)
         plotted_image = self.plot_landmarks(detection_results)
         
-        return [detection_results['poses3d'].numpy(), rendered_image,plotted_image]
+        return [detection_results, rendered_image,plotted_image]
     
     
     
