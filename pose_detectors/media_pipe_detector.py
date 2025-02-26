@@ -17,6 +17,9 @@ from mediapipe.framework.formats import landmark_pb2
 
 connections = mp.solutions.pose.POSE_CONNECTIONS
 
+_PRESENCE_THRESHOLD = 0.5
+_VISIBILITY_THRESHOLD = 0.5
+
 class MediaPipeDetector(PoseDetector):
     def __init__(self):
         self.model_path = "pose_landmarker_heavy.task"
@@ -63,7 +66,6 @@ class MediaPipeDetector(PoseDetector):
         # Loop through the detected poses to visualize.
         for idx in range(len(pose_landmarks_list)):
             pose_landmarks = pose_landmarks_list[idx]
-
             # Draw the pose landmarks.
             pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
             pose_landmarks_proto.landmark.extend([
@@ -97,6 +99,9 @@ class MediaPipeDetector(PoseDetector):
         plotted_landmarks = {}
         for idx, landmark in enumerate(poses.pose_world_landmarks[0]):
 
+            if (landmark.visibility < _VISIBILITY_THRESHOLD):
+                continue
+
             ax.scatter3D(
                 xs=[-landmark.z],
                 ys=[landmark.x],
@@ -105,6 +110,7 @@ class MediaPipeDetector(PoseDetector):
             plotted_landmarks[idx] = (-landmark.z, landmark.x, -landmark.y)
 
         num_landmarks = len(poses.pose_world_landmarks[0])
+        
         for connection in connections:
             start_idx = connection[0]
             end_idx = connection[1]
