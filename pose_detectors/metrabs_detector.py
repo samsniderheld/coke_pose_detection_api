@@ -1,5 +1,6 @@
 import cv2
 import io
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -19,27 +20,11 @@ ikea_asm_17, human4d_32, 3dpeople_29, umpm_15, smpl+head_30
 
 class MetrabsDetector(PoseDetector):
     def __init__(self):
-        # self.model_path = "metrabs_eff2l_y4"
-        # self.check_and_download_model()
         self.load_model()
         self.skeleton = 'smpl_24'
-        
-
-    def check_and_download_model(self):
-        if not os.path.exists(self.model_path):
-            print(f"Model file not found at {self.model_path}. Downloading...")
-            server_prefix = 'https://omnomnom.vision.rwth-aachen.de/data/metrabs'
-            model_zippath = tf.keras.utils.get_file(
-                origin=f'{server_prefix}/{self.model_path}_20211019.zip',
-                extract=True, cache_subdir='models')
-            self.model_path = os.path.join(os.path.dirname(model_zippath), self.model_path)+"_20211019.zip/metrabs_eff2l_y4"
-            print(f"Model downloaded to {self.model_path}")
-
 
     def load_model(self):
-    #    self.model = tf.saved_model.load(self.model_path) # or metrabs_eff2l_y4 for the big model
         self.model = tfhub.load('https://bit.ly/metrabs_l')
-
 
     def load_image_path(self, image_path) -> Image:
         # Load the input image from an image file.
@@ -125,15 +110,20 @@ class MetrabsDetector(PoseDetector):
         
         return [detection_results, rendered_image,plotted_image]
     
-    def create_json_response(self, detection_results)-> dict:
+    def create_json_response(self, detection_results)-> list:
         # Convert the detection results to a JSON-compatible format
         poses3d = detection_results['poses3d'].numpy().tolist()
         joint_names = self.model.per_skeleton_joint_names[self.skeleton].numpy().tolist()
         
         # Create a dictionary with joint names as keys and corresponding 3D poses as values
-        joint_pose_dict = {joint_names[i]: poses3d[0][i] for i in range(len(joint_names))}
-        
-        return {"keypoints": joint_pose_dict}
+        joint_pose_dict = {str(joint_names[i]): poses3d[0][i] for i in range(len(joint_names))}
+        json = {"keypoints": joint_pose_dict}
+        return json
+
+    def create_json_file(self, detection_results, output_path):
+        json_response = self.create_json_response(detection_results)
+        with open(output_path, 'w') as f:
+            json.dump(json_response, f)
     
     
     
