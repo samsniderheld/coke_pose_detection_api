@@ -130,10 +130,10 @@ class MetrabsDetector(PoseDetector):
         poses3d = detection_results['poses3d'].numpy().tolist()
         joint_names = self.model.per_skeleton_joint_names[self.skeleton].numpy().tolist()
         
-        return {
-            'poses3d': poses3d,
-            'joint_names': joint_names,
-        }
+        # Create a dictionary with joint names as keys and corresponding 3D poses as values
+        joint_pose_dict = {joint_names[i]: poses3d[0][i] for i in range(len(joint_names))}
+        
+        return joint_pose_dict
     
     
     
