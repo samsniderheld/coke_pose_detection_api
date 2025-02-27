@@ -22,6 +22,7 @@ class MetrabsDetector(PoseDetector):
         # self.model_path = "metrabs_eff2l_y4"
         # self.check_and_download_model()
         self.load_model()
+        self.skeleton = 'smpl_24'
         
 
     def check_and_download_model(self):
@@ -47,7 +48,7 @@ class MetrabsDetector(PoseDetector):
     
     def draw_landmarks_on_image(self, tf_image, detection_result)-> np.ndarray:
         pose_landmarks_list = detection_result['poses2d'].numpy()
-        edges = self.model.per_skeleton_joint_edges['smpl_24'].numpy()
+        edges = self.model.per_skeleton_joint_edges[self.skeleton].numpy()
         np_image = tf_image.numpy()
         annotated_image = np.copy(np_image)
 
@@ -82,7 +83,7 @@ class MetrabsDetector(PoseDetector):
         return img_array
     
     def plot_landmarks(self, detection_result)-> np.ndarray:
-        edges = self.model.per_skeleton_joint_edges['smpl_24'].numpy()
+        edges = self.model.per_skeleton_joint_edges[self.skeleton].numpy()
         poses3d = detection_result['poses3d'].numpy()
         
         fig = plt.figure(figsize=(10, 5.2))
@@ -117,12 +118,22 @@ class MetrabsDetector(PoseDetector):
         else:
             raise ValueError("Input must be a file path")
 
-        detection_results = self.model.detect_poses(image, skeleton='smpl_24')
+        detection_results = self.model.detect_poses(image, skeleton=self.skeleton)
 
         rendered_image = self.draw_landmarks_on_image(image, detection_results)
         plotted_image = self.plot_landmarks(detection_results)
         
         return [detection_results, rendered_image,plotted_image]
+    
+    def create_json_response(self, detection_results)-> dict:
+        # Convert the detection results to a JSON-compatible format
+        poses3d = detection_results['poses3d'].numpy().tolist()
+        joint_names = self.model.per_skeleton_joint_names[self.skeleton].numpy().tolist()
+        
+        return {
+            'poses3d': poses3d,
+            'joint_names': joint_names,
+        }
     
     
     
