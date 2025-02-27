@@ -1,14 +1,13 @@
-import io
 import cv2
+import io
+import matplotlib.pyplot as plt
 import numpy as np
 import os
+import tensorflow as tf
+import tensorflow_hub as tfhub
+
 from PIL import Image
 from .pose_detector import PoseDetector
-
-import tensorflow as tf
-import os
-
-import matplotlib.pyplot as plt
 
 """
 full list of skeletons:
@@ -20,8 +19,8 @@ ikea_asm_17, human4d_32, 3dpeople_29, umpm_15, smpl+head_30
 
 class MetrabsDetector(PoseDetector):
     def __init__(self):
-        self.model_path = "metrabs_eff2l_y4"
-        self.check_and_download_model()
+        # self.model_path = "metrabs_eff2l_y4"
+        # self.check_and_download_model()
         self.load_model()
         
 
@@ -37,7 +36,8 @@ class MetrabsDetector(PoseDetector):
 
 
     def load_model(self):
-       self.model = tf.saved_model.load(self.model_path) # or metrabs_eff2l_y4 for the big model
+    #    self.model = tf.saved_model.load(self.model_path) # or metrabs_eff2l_y4 for the big model
+        self.model = tfhub.load('https://bit.ly/metrabs_l')
 
 
     def load_image_path(self, image_path) -> Image:
@@ -45,7 +45,7 @@ class MetrabsDetector(PoseDetector):
         tf_image = tf.image.decode_jpeg(tf.io.read_file(image_path))
         return tf_image
     
-    def draw_landmarks_on_image(self, tf_image, detection_result):
+    def draw_landmarks_on_image(self, tf_image, detection_result)-> np.ndarray:
         pose_landmarks_list = detection_result['poses2d'].numpy()
         edges = self.model.per_skeleton_joint_edges['smpl_24'].numpy()
         np_image = tf_image.numpy()
@@ -67,7 +67,7 @@ class MetrabsDetector(PoseDetector):
            
         return annotated_image
     
-    def figure_to_numpy(self, fig):
+    def figure_to_numpy(self, fig)-> np.ndarray:
         # Save the figure to a buffer
         buf = io.BytesIO()
         fig.savefig(buf, format='png')
@@ -81,7 +81,7 @@ class MetrabsDetector(PoseDetector):
         
         return img_array
     
-    def plot_landmarks(self, detection_result):
+    def plot_landmarks(self, detection_result)-> np.ndarray:
         edges = self.model.per_skeleton_joint_edges['smpl_24'].numpy()
         poses3d = detection_result['poses3d'].numpy()
         

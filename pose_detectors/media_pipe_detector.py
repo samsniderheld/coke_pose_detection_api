@@ -3,12 +3,10 @@ import mediapipe as mp
 import numpy as np
 import os
 import requests
-from PIL import Image
 from PIL import Image as PILImage
 from .pose_detector import PoseDetector
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from mediapipe.tasks.python.vision.pose_landmarker import PoseLandmarkerResult
 from mediapipe.python._framework_bindings.image import Image
@@ -17,7 +15,6 @@ from mediapipe.framework.formats import landmark_pb2
 
 connections = mp.solutions.pose.POSE_CONNECTIONS
 
-_PRESENCE_THRESHOLD = 0.5
 _VISIBILITY_THRESHOLD = 0.5
 
 class MediaPipeDetector(PoseDetector):
@@ -58,7 +55,7 @@ class MediaPipeDetector(PoseDetector):
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=numpy_image)
         return mp_image
     
-    def draw_landmarks_on_image(self, rgb_image, detection_result):
+    def draw_landmarks_on_image(self, rgb_image, detection_result)-> np.ndarray:
         pose_landmarks_list = detection_result.pose_landmarks
         np_image = rgb_image.numpy_view()
         annotated_image = np.copy(np_image)
@@ -78,7 +75,7 @@ class MediaPipeDetector(PoseDetector):
             solutions.drawing_styles.get_default_pose_landmarks_style())
         return annotated_image
     
-    def figure_to_numpy(self, fig):
+    def figure_to_numpy(self, fig)-> np.ndarray:
         # Save the figure to a buffer
         buf = io.BytesIO()
         fig.savefig(buf, format='png')
@@ -92,7 +89,7 @@ class MediaPipeDetector(PoseDetector):
         
         return img_array
     
-    def plot_landmarks(self, poses):
+    def plot_landmarks(self, poses)-> np.ndarray:
         fig = plt.figure()
         ax = plt.axes(111,projection='3d')
         ax.view_init(elev=10, azim=10)
