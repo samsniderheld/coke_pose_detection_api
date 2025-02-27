@@ -133,7 +133,7 @@ class MetrabsDetector(PoseDetector):
         # Create a dictionary with joint names as keys and corresponding 3D poses as values
         joint_pose_dict = {joint_names[i]: poses3d[0][i] for i in range(len(joint_names))}
         
-        return joint_pose_dict
+        return {"keypoints": joint_pose_dict}
     
     
     
