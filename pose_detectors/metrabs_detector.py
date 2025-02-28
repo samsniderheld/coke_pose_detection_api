@@ -115,7 +115,7 @@ class MetrabsDetector(PoseDetector):
         
         return [detection_results, rendered_image,plotted_image]
     
-    def create_json_response(self, detection_results)-> list:
+    def create_json_response(self, detection_results,skeleton="smpl_24")-> list:
         # Convert the detection results to a JSON-compatible format
         poses3d = detection_results['poses3d'].numpy().tolist()
         joint_names = self.model.per_skeleton_joint_names[skeleton].numpy().tolist()

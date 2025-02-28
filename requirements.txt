@@ -4,6 +4,6 @@ mediapipe
 numpy
 pillow
 pytest
-tensorflow
+tensorflow==2.17.1
 tensorflow-hub
 uvicorn
