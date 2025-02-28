@@ -5,7 +5,7 @@ from pose_detectors.metrabs_detector import MetrabsDetector
 
 @pytest.fixture(scope="session")
 def metrabs_detector():
-    return MetrabsDetector()
+    return MetrabsDetector(model="small")
 
 def test_load_model(metrabs_detector):
     assert metrabs_detector.model is not None
