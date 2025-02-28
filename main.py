@@ -7,7 +7,7 @@ from pose_detectors.metrabs_detector import MetrabsDetector
 
 app = Flask(__name__)
 
-pose_detector = MetrabsDetector()
+pose_detector = MetrabsDetector(model="small")
 tmp_img_path = "tmp_img.jpg"
 
 @app.route("/generate_pose/", methods=["POST"])
