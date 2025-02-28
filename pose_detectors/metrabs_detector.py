@@ -111,7 +111,7 @@ class MetrabsDetector(PoseDetector):
         detection_results = self.model.detect_poses(image, skeleton=skeleton)
 
         rendered_image = self.draw_landmarks_on_image(image, detection_results, skeleton)
-        plotted_image = self.plot_landmarks(detection_results)
+        plotted_image = self.plot_landmarks(detection_results,skeleton)
         
         return [detection_results, rendered_image,plotted_image]
     
