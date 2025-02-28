@@ -19,12 +19,17 @@ ikea_asm_17, human4d_32, 3dpeople_29, umpm_15, smpl+head_30
 """
 
 class MetrabsDetector(PoseDetector):
-    def __init__(self):
+    def __init__(self,model='large'):
         self.load_model()
-        self.skeleton = 'smpl_24'
 
-    def load_model(self):
-        self.model = tfhub.load('https://bit.ly/metrabs_l')
+    def load_model(self,size):
+        if size == 'large':
+            self.model = tfhub.load('https://bit.ly/metrabs_l')
+        elif size == 'small':
+            self.model = tfhub.load('https://bit.ly/metrabs_s')
+        else:
+            raise ValueError("Invalid model size. Choose either 'large' or 'small'.")
+        
 
     def load_image_path(self, image_path) -> Image:
         # Load the input image from an image file.
@@ -95,7 +100,7 @@ class MetrabsDetector(PoseDetector):
         return img_array
 
 
-    def detect_poses(self, image_or_path) -> list[np.ndarray, np.ndarray, np.ndarray]:
+    def detect_poses(self, image_or_path,skeleton="smpl_24") -> list[np.ndarray, np.ndarray, np.ndarray]:
         if isinstance(image_or_path, Image.Image):
             raise ValueError("Input must be a file path")
         elif isinstance(image_or_path, str):
@@ -103,7 +108,7 @@ class MetrabsDetector(PoseDetector):
         else:
             raise ValueError("Input must be a file path")
 
-        detection_results = self.model.detect_poses(image, skeleton=self.skeleton)
+        detection_results = self.model.detect_poses(image, skeleton=skeleton)
 
         rendered_image = self.draw_landmarks_on_image(image, detection_results)
         plotted_image = self.plot_landmarks(detection_results)
@@ -113,7 +118,7 @@ class MetrabsDetector(PoseDetector):
     def create_json_response(self, detection_results)-> list:
         # Convert the detection results to a JSON-compatible format
         poses3d = detection_results['poses3d'].numpy().tolist()
-        joint_names = self.model.per_skeleton_joint_names[self.skeleton].numpy().tolist()
+        joint_names = self.model.per_skeleton_joint_names[skeleton].numpy().tolist()
         
         # Create a dictionary with joint names as keys and corresponding 3D poses as values
         joint_pose_dict = {str(joint_names[i]): poses3d[0][i] for i in range(len(joint_names))}
