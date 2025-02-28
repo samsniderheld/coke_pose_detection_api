@@ -22,10 +22,10 @@ class MetrabsDetector(PoseDetector):
     def __init__(self,model='large'):
         self.load_model(model)
 
-    def load_model(self,size):
-        if size == 'large':
+    def load_model(self,model):
+        if model == 'large':
             self.model = tfhub.load('https://bit.ly/metrabs_l')
-        elif size == 'small':
+        elif model == 'small':
             self.model = tfhub.load('https://bit.ly/metrabs_s')
         else:
             raise ValueError("Invalid model size. Choose either 'large' or 'small'.")
@@ -36,9 +36,9 @@ class MetrabsDetector(PoseDetector):
         tf_image = tf.image.decode_jpeg(tf.io.read_file(image_path))
         return tf_image
     
-    def draw_landmarks_on_image(self, tf_image, detection_result)-> np.ndarray:
+    def draw_landmarks_on_image(self, tf_image, detection_result,skeleton)-> np.ndarray:
         pose_landmarks_list = detection_result['poses2d'].numpy()
-        edges = self.model.per_skeleton_joint_edges[self.skeleton].numpy()
+        edges = self.model.per_skeleton_joint_edges[skeleton].numpy()
         np_image = tf_image.numpy()
         annotated_image = np.copy(np_image)
 
@@ -72,8 +72,8 @@ class MetrabsDetector(PoseDetector):
         
         return img_array
     
-    def plot_landmarks(self, detection_result)-> np.ndarray:
-        edges = self.model.per_skeleton_joint_edges[self.skeleton].numpy()
+    def plot_landmarks(self, detection_result, skeleton)-> np.ndarray:
+        edges = self.model.per_skeleton_joint_edges[skeleton].numpy()
         poses3d = detection_result['poses3d'].numpy()
         
         fig = plt.figure(figsize=(10, 5.2))
@@ -110,7 +110,7 @@ class MetrabsDetector(PoseDetector):
 
         detection_results = self.model.detect_poses(image, skeleton=skeleton)
 
-        rendered_image = self.draw_landmarks_on_image(image, detection_results)
+        rendered_image = self.draw_landmarks_on_image(image, detection_results, skeleton)
         plotted_image = self.plot_landmarks(detection_results)
         
         return [detection_results, rendered_image,plotted_image]
