@@ -20,7 +20,7 @@ ikea_asm_17, human4d_32, 3dpeople_29, umpm_15, smpl+head_30
 
 class MetrabsDetector(PoseDetector):
     def __init__(self,model='large'):
-        self.load_model()
+        self.load_model(model)
 
     def load_model(self,size):
         if size == 'large':

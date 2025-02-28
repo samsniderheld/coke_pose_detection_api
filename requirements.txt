@@ -5,5 +5,5 @@ numpy
 pillow
 pytest
 tensorflow
-tensorlfow-hub
+tensorflow-hub
 uvicorn
